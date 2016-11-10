@@ -16,6 +16,6 @@ class GmpReuseConan(ConanFile):
 
     def test(self):
         if self.settings.os == "Windows":
-            self.run(os.sep.join([".", "bin", "Release", "test"]))
+            self.run(os.sep.join([".", "bin", "%s" % self.settings.build_type, "test"]))
         else:
             self.run(os.sep.join([".", "bin", "test"]))

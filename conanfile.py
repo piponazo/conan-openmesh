@@ -21,29 +21,36 @@ class ExivConan(ConanFile):
 
     def build(self):
 
-        # TODO: Handle Release & Debug for windows
         os.makedirs('openmesh/build')
         os.makedirs('openmesh/installFolder')
 
         cmake = CMake(self.settings)
         cmake_options = []
-        cmake_options.append("CMAKE_BUILD_TYPE=Release")
+        if self.settings.os != "Windows":
+            cmake_options.append("CMAKE_BUILD_TYPE=%s" % self.settings.build_type)
+            #cmake_options.append("CMAKE_DEBUG_POSTFIX=\"\"")
         cmake_options.append("BUILD_APPS=OFF")
         cmake_options.append("CMAKE_INSTALL_PREFIX=../installFolder")
         options = " -D".join(cmake_options)
 
-        conf_command = 'cd openmesh/build && cmake .. %s -D%s' % (cmake.command_line, options)
-        self.output.warn(conf_command)
-        self.run(conf_command)
+        config_command = 'cd openmesh/build && cmake .. %s -D%s' % (cmake.command_line, options)
+        self.output.warn(config_command)
+        self.run(config_command)
 
         compile_command = "cd openmesh/build && cmake --build . %s" % cmake.build_config
         if self.settings.os != "Windows":
             n_cores = tools.cpu_count()
             compile_command = compile_command + " -- -j%s" % (n_cores)
+        else:
+            compile_command = compile_command + " --config %s" % (self.settings.build_type)
         self.output.warn(compile_command)
         self.run(compile_command)
 
-        self.run("cd openmesh/build && cmake --build . --target install --config Release")
+        install_command = "cd openmesh/build && cmake --build . --target install"
+        if self.settings.os == "Windows":
+            install_command = install_command + " --config %s" % (self.settings.build_type)
+        self.output.warn(install_command)
+        self.run(install_command)
 
     def package(self):
         self.copy("FindOpenMesh.cmake", ".", ".")
