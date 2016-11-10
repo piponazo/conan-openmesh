@@ -48,6 +48,6 @@ class ExivConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']  # Ordered list of include paths
-        self.cpp_info.libs = ['OpenMeshCore', 'OpenMeshToolds']  # The libs to link against
+        self.cpp_info.libs = ['OpenMeshCore', 'OpenMeshTools']  # The libs to link against
         self.cpp_info.libdirs = ['lib']  # Directories where libraries can be found
         self.cpp_info.resdirs = ['res']  # Directories where resources, data, etc can be found
