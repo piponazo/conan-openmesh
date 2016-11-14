@@ -54,8 +54,10 @@ class ExivConan(ConanFile):
 
     def package(self):
         self.copy("FindOpenMesh.cmake", ".", ".")
-        self.copy("*",   dst="include", src="openmesh/installFolder/include")
-        self.copy("*",   dst="lib",     src="openmesh/installFolder/lib")
+        self.copy("*",       dst="include", src="openmesh/installFolder/include")
+        self.copy("*.lib",   dst="lib",     src="openmesh/installFolder/lib")
+        self.copy("*.so*",   dst="lib",     src="openmesh/installFolder/lib")
+        self.copy("*.dylib", dst="lib",     src="openmesh/installFolder/lib")
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']  # Ordered list of include paths
