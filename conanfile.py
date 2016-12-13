@@ -1,43 +1,35 @@
 from conans import ConanFile, tools, CMake
 import os, sys
 
-class ExivConan(ConanFile):
+class OpenMeshConan(ConanFile):
     name = "OpenMesh"
-    version = "4.1.1"
+    version = "6.3.0"
     settings = "os", "compiler", "build_type", "arch"
+    description="Public recipe for OpenMesh"
     url="https://github.com/piponazo/conan-openmesh"
     exports = ["FindOpenMesh.cmake"]
-    FOLDER_NAME = "openmesh_%s" % version.replace(".", "_")
     license="GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007"
 
     def source(self):
-        url='https://bitbucket.org/pix4d/openmesh/get/4.1-patch-1.tar.bz2'
-        zip_name = "%s.tar.bz2" % (self.FOLDER_NAME)
-        self.output.info("Downloading %s..." % url)
-        tools.download(url, zip_name)
-        tools.unzip(zip_name, ".")
-        os.remove(zip_name)
-        os.rename("pix4d-openmesh-f84bca0b26c6", "openmesh")
+        self.run("git clone --depth 1 --branch OpenMesh-6.3 https://www.graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh.git")
 
     def build(self):
 
-        os.makedirs('openmesh/build')
-        os.makedirs('openmesh/installFolder')
+        os.makedirs('OpenMesh/build')
+        os.makedirs('OpenMesh/installFolder')
 
         cmake = CMake(self.settings)
         cmake_options = []
-        if self.settings.os != "Windows":
-            cmake_options.append("CMAKE_BUILD_TYPE=%s" % self.settings.build_type)
-            #cmake_options.append("CMAKE_DEBUG_POSTFIX=\"\"")
+        cmake_options.append("CMAKE_BUILD_TYPE=%s" % self.settings.build_type)
         cmake_options.append("BUILD_APPS=OFF")
-        cmake_options.append("CMAKE_INSTALL_PREFIX=../installFolder")
+        cmake_options.append("CMAKE_INSTALL_PREFIX=%s" % self.package_folder)
         options = " -D".join(cmake_options)
 
-        config_command = 'cd openmesh/build && cmake .. %s -D%s' % (cmake.command_line, options)
+        config_command = 'cd OpenMesh/build && cmake .. %s -D%s' % (cmake.command_line, options)
         self.output.warn(config_command)
         self.run(config_command)
 
-        compile_command = "cd openmesh/build && cmake --build . %s" % cmake.build_config
+        compile_command = "cd OpenMesh/build && cmake --build . %s" % cmake.build_config
         if self.settings.os != "Windows":
             n_cores = tools.cpu_count()
             compile_command = compile_command + " -- -j%s" % (n_cores)
@@ -46,18 +38,13 @@ class ExivConan(ConanFile):
         self.output.warn(compile_command)
         self.run(compile_command)
 
-        install_command = "cd openmesh/build && cmake --build . --target install"
-        if self.settings.os == "Windows":
-            install_command = install_command + " --config %s" % (self.settings.build_type)
+        install_command = "cd OpenMesh/build && cmake --build . --target install"
+        install_command = install_command + " --config %s" % (self.settings.build_type)
         self.output.warn(install_command)
         self.run(install_command)
 
     def package(self):
         self.copy("FindOpenMesh.cmake", ".", ".")
-        self.copy("*",       dst="include", src="openmesh/installFolder/include")
-        self.copy("*.lib",   dst="lib",     src="openmesh/installFolder/lib")
-        self.copy("*.so*",   dst="lib",     src="openmesh/installFolder/lib")
-        self.copy("*.dylib", dst="lib",     src="openmesh/installFolder/lib")
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']  # Ordered list of include paths

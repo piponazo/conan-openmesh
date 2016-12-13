@@ -6,7 +6,7 @@ channel = os.getenv("CONAN_CHANNEL", "testing")
 
 class GmpReuseConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
-    requires = "OpenMesh/4.1.1@%s/%s" % (username, channel)
+    requires = "OpenMesh/6.3.0@%s/%s" % (username, channel)
     generators = "cmake"
 
     def build(self):
